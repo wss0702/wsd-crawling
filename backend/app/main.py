@@ -3,10 +3,12 @@ from fastapi import FastAPI
 from fastapi.routing import APIRoute
 from starlette.middleware.cors import CORSMiddleware
 from sqlmodel import Session
+from starlette.middleware import Middleware
 
 from app.api.main import api_router
 from app.core.config import settings
 from app.core.db import init_db, engine
+from app.core.auth_middleware import AuthMiddleware
 
 
 def custom_generate_unique_id(route: APIRoute) -> str:
@@ -21,6 +23,8 @@ app = FastAPI(
     openapi_url=f"{settings.API_V1_STR}/openapi.json",
     generate_unique_id_function=custom_generate_unique_id,
 )
+
+app.add_middleware(AuthMiddleware)
 
 @app.on_event("startup")
 def on_startup():

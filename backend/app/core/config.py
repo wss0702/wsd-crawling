@@ -1,5 +1,6 @@
 import secrets
 import warnings
+import logging
 from typing import Annotated, Any, Literal
 
 from pydantic import (
@@ -13,6 +14,9 @@ from pydantic import (
 from pydantic_core import MultiHostUrl
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing_extensions import Self
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 def parse_cors(v: Any) -> list[str] | str:
@@ -117,6 +121,10 @@ class Settings(BaseSettings):
         )
 
         return self
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        logger.info(f'SECRET_KEY가 등록되었습니다: {self.SECRET_KEY}')
 
 
 settings = Settings()  # type: ignore
