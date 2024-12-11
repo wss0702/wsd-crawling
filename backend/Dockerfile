@@ -1,43 +1,38 @@
-FROM python:3.10
+# Use the official Python image from the Docker Hub
+FROM python:3.10-slim
 
+# Set environment variables
 ENV PYTHONUNBUFFERED=1
+ENV POETRY_VERSION=1.5.1
 
-WORKDIR /app/
+# Set the working directory
+WORKDIR /app
 
-# Install uv
-# Ref: https://docs.astral.sh/uv/guides/integration/docker/#installing-uv
-COPY --from=ghcr.io/astral-sh/uv:0.4.15 /uv /bin/uv
+# Install Poetry
+RUN pip install "poetry==$POETRY_VERSION"
 
-# Place executables in the environment at the front of the path
-# Ref: https://docs.astral.sh/uv/guides/integration/docker/#using-the-environment
-ENV PATH="/app/.venv/bin:$PATH"
+# Copy pyproject.toml to the container
+COPY pyproject.toml /app/
 
-# Compile bytecode
-# Ref: https://docs.astral.sh/uv/guides/integration/docker/#compiling-bytecode
-ENV UV_COMPILE_BYTECODE=1
+# Generate poetry.lock if it doesn't exist
+RUN if [ ! -f /app/poetry.lock ]; then poetry lock; fi
 
-# uv Cache
-# Ref: https://docs.astral.sh/uv/guides/integration/docker/#caching
-ENV UV_LINK_MODE=copy
+# Check if poetry.lock exists before copying
+RUN test -f poetry.lock || touch poetry.lock
+
+# Copy poetry.lock to the container
+COPY poetry.lock /app/
 
 # Install dependencies
-# Ref: https://docs.astral.sh/uv/guides/integration/docker/#intermediate-layers
-RUN --mount=type=cache,target=/root/.cache/uv \
-    --mount=type=bind,source=uv.lock,target=uv.lock \
-    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
-    uv sync --frozen --no-install-project
+RUN poetry config virtualenvs.create false && poetry install --no-root --no-dev
 
-ENV PYTHONPATH=/app
+# Copy the rest of the application code
+COPY . /app
 
-COPY ./scripts /app/scripts
+# Expose the port FastAPI will run on
+EXPOSE 8000
 
-COPY ./pyproject.toml ./uv.lock ./alembic.ini /app/
+# Run the FastAPI application
+CMD ["poetry", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
 
-COPY ./app /app/app
-
-# Sync the project
-# Ref: https://docs.astral.sh/uv/guides/integration/docker/#intermediate-layers
-RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync
-
-CMD ["fastapi", "run", "--workers", "4", "app/main.py"]
+# poetry run uvicorn app.main:app --host 0.0.0.0 --port 8000
