@@ -10,19 +10,13 @@ engine = create_engine(str(settings.SQLALCHEMY_DATABASE_URI))
 
 logging.basicConfig(level=logging.INFO)
 
-# 데이터베이스 세션을 관리하는 함수 추가
-@contextmanager
-def get_session() -> Session: # type: ignore
+
+def get_session():
     session = Session(engine)
     try:
         yield session
     finally:
         session.close()
-
-# make sure all SQLModel models are imported (app.models) before initializing DB
-# otherwise, SQLModel might fail to initialize relationships properly
-# for more details: https://github.com/fastapi/full-stack-fastapi-template/issues/28
-
 
 def init_db(session: Session) -> None:
     logging.info("Initializing the database...")

@@ -6,7 +6,7 @@ from sqlmodel import Session, select
 from app.core.security import get_password_hash, verify_password
 from app.models.models import User, UserCreate, UserUpdate
 from app.models.JobPosting import JobPosting
-from app.models.JobPostingRepository import JobPostingRepository
+from app.models.JobPostingRepository import get_job_posting_repository, JobPostingRepository
 
 
 def create_user(*, session: Session, user_create: UserCreate) -> User:
@@ -49,13 +49,15 @@ def authenticate(*, session: Session, email: str, password: str) -> User | None:
 
 # JobPosting SQL Model에 대한 CRUD
 
-def list_job_postings(session: Session, skip: int = 0, limit: int = 20, sort_by: str = "postingId", **filters):
-    repository = JobPostingRepository(session)
+def list_job_postings(repository: JobPostingRepository, skip: int = 0, limit: int = 20, sort_by: str = "postingId", **filters):
     return repository.list(skip=skip, limit=limit, sort_by=sort_by, **filters)
 
 
-def get_job_posting(session: Session, posting_id: int) -> JobPosting | None:
-    repository = JobPostingRepository(session)
+def get_job_posting(repository: JobPostingRepository, posting_id: int) -> JobPosting | None:
     return repository.get(posting_id)
+
+
+def create_job_posting(repository: JobPostingRepository, job_posting: JobPosting):
+    return repository.create(job_posting)
 
 

@@ -2,19 +2,18 @@ import time
 from bs4 import BeautifulSoup
 import requests
 import pandas as pd
-from requests import Session
 
-from app.core.db import get_session
 from app.models.JobPosting import JobPosting
+from app.models.JobPostingRepository import JobPostingRepository
 
-
-def crawl_saramin(keyword, pages=1):
+def crawl_saramin(keyword, pages=1, repository=JobPostingRepository):
     """
     사람인 채용공고를 크롤링하는 함수
 
     Args:
         keyword (str): 검색할 키워드
         pages (int): 크롤링할 페이지 수
+        repository (JobPostingRepository): 레포지토리 인스턴스
 
     Returns:
         DataFrame: 채용공고 정보가 담긴 데이터프레임
@@ -71,18 +70,15 @@ def crawl_saramin(keyword, pages=1):
                     except ValueError:
                         salary_value = 0  # 변환 실패 시 기본값 설정
 
-                    # 데이터베이스에 저장
-                    with get_session() as session:
-                        job_posting = JobPosting(
-                            postingContent=title,
-                            location=location,
-                            experience=experience,
-                            salary=salary_value,
-                            skills=[],  # 기술 스택은 추가적으로 파싱할 수 있습니다.
-                            views=0  # 초기 조회수
-                        )
-                        session.add(job_posting)
-                        session.commit()
+                    job_posting = JobPosting(
+                        postingContent=title,
+                        location=location,
+                        experience=experience,
+                        salary=salary_value,
+                        skills=[],  # 기술 스택은 추가적으로 파싱할 수 있습니다.
+                        views=0  # 초기 조회수
+                    )
+                    repository.create(job_posting)  # 레포지토리를 통해 저장
 
                     jobs.append({
                         '회사명': company,
@@ -109,9 +105,3 @@ def crawl_saramin(keyword, pages=1):
             continue
 
     return pd.DataFrame(jobs)
-
-# 사용 예시
-if __name__ == "__main__":
-    # 'python' 키워드로 3페이지 크롤링
-    df = crawl_saramin('python', pages=1)
-    print(df)

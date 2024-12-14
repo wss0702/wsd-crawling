@@ -25,6 +25,7 @@ def create_access_token(subject: str | Any, expires_delta: timedelta) -> str:
     
     to_encode = {"exp": expire, "sub": str(subject)}
     encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=ALGORITHM)
+    logger.info(f"JWT TOKEN:{encoded_jwt}")
     return encoded_jwt
 
 

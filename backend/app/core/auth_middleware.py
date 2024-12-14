@@ -25,7 +25,8 @@ class AuthMiddleware(BaseHTTPMiddleware):
             return response
         
         token = request.headers.get("Authorization")
-        if token is None or not token.startswith("Bearer "):
+        logger.info(f"Request token {token}")
+        if token is None or not token.startswith("bearer "):
             logger.warning("토큰이 없습니다.")  # 토큰 없음 로깅
             raise HTTPException(status_code=401, detail="Not authenticated")
         
