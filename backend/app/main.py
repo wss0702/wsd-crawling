@@ -39,4 +39,3 @@ def on_startup():
         crawl_saramin(keyword="python", pages=1, repository=repository)  # 레포지토리 전달
 
 app.include_router(api_router, prefix=settings.API_V1_STR)
-app.include_router(applications.router, prefix="/api/v1")
