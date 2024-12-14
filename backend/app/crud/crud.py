@@ -4,7 +4,9 @@ from typing import Any
 from sqlmodel import Session, select
 
 from app.core.security import get_password_hash, verify_password
-from app.models import User, UserCreate, UserUpdate
+from app.models.models import User, UserCreate, UserUpdate
+from app.models.JobPosting import JobPosting
+from app.models.JobPostingRepository import JobPostingRepository
 
 
 def create_user(*, session: Session, user_create: UserCreate) -> User:
@@ -44,5 +46,16 @@ def authenticate(*, session: Session, email: str, password: str) -> User | None:
     if not verify_password(password, db_user.hashed_password):
         return None
     return db_user
+
+# JobPosting SQL Model에 대한 CRUD
+
+def list_job_postings(session: Session, skip: int = 0, limit: int = 20, sort_by: str = "postingId", **filters):
+    repository = JobPostingRepository(session)
+    return repository.list(skip=skip, limit=limit, sort_by=sort_by, **filters)
+
+
+def get_job_posting(session: Session, posting_id: int) -> JobPosting | None:
+    repository = JobPostingRepository(session)
+    return repository.get(posting_id)
 
 

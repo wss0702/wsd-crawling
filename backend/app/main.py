@@ -9,10 +9,13 @@ from app.api.main import api_router
 from app.core.config import settings
 from app.core.db import init_db, engine
 from app.core.auth_middleware import AuthMiddleware
+from app.utils.crawl_saramin import crawl_saramin
 
 
 def custom_generate_unique_id(route: APIRoute) -> str:
-    return f"{route.tags[0]}-{route.name}"
+    if route.tags:
+        return f"{route.tags[0]}-{route.name}"
+    return f"untagged-{route.name}"
 
 
 if settings.SENTRY_DSN and settings.ENVIRONMENT != "local":
@@ -30,5 +33,6 @@ app.add_middleware(AuthMiddleware)
 def on_startup():
     with Session(engine) as session:
         init_db(session)
+    crawl_saramin(keyword="python")
 
 app.include_router(api_router, prefix=settings.API_V1_STR)

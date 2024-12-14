@@ -3,6 +3,9 @@ import uuid
 from pydantic import EmailStr
 from sqlmodel import Field, Relationship, SQLModel
 
+from sqlalchemy import ARRAY, String
+from typing import List, Optional
+
 
 # Shared properties
 class UserBase(SQLModel):
@@ -74,3 +77,16 @@ class TokenPayload(SQLModel):
 class NewPassword(SQLModel):
     token: str
     new_password: str = Field(min_length=8, max_length=40)
+
+
+
+
+# class JobPosting(SQLModel, table=True):
+#     postingId: int = Field(primary_key=True)
+#     postingContent: str
+#     location: str  # 지역
+#     experience: str  # 경력
+#     salary: float  # 급여
+#     skills: list[str] = Field(default_factory=list, sa_column=Field(ARRAY(String)))  # 기술 스택
+#     views: int = Field(default=0)  # 조회수
+

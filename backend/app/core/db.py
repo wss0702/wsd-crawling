@@ -1,14 +1,23 @@
 from sqlmodel import Session, create_engine, select
 import logging
+from contextlib import contextmanager
 
 from app import crud
 from app.core.config import settings
-from app.models import User, UserCreate
+from app.models.models import User, UserCreate
 
 engine = create_engine(str(settings.SQLALCHEMY_DATABASE_URI))
 
 logging.basicConfig(level=logging.INFO)
 
+# 데이터베이스 세션을 관리하는 함수 추가
+@contextmanager
+def get_session() -> Session: # type: ignore
+    session = Session(engine)
+    try:
+        yield session
+    finally:
+        session.close()
 
 # make sure all SQLModel models are imported (app.models) before initializing DB
 # otherwise, SQLModel might fail to initialize relationships properly

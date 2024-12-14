@@ -17,11 +17,13 @@ jinja2 = ">=3.1.4,<4.0.0"
 alembic = ">=1.12.1,<2.0.0"
 httpx = ">=0.25.1,<1.0.0"
 psycopg = {extras = ["binary"], version = ">=3.1.13,<4.0.0"}
-sqlmodel = ">=0.0.21,<1.0.0"
+sqlmodel = "^0.0.22"
 bcrypt = "==4.0.1"
 pydantic-settings = ">=2.2.1,<3.0.0"
 sentry-sdk = {extras = ["fastapi"], version = ">=1.40.6,<2.0.0"}
 pyjwt = ">=2.8.0,<3.0.0"
+beautifulsoup4 = "^4.12.3"
+pandas = "^2.2.3"
 
 [tool.poetry.dev-dependencies]
 pytest = ">=7.4.3,<8.0.0"
