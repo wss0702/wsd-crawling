@@ -11,6 +11,7 @@ from app.core.db import init_db, engine
 from app.core.auth_middleware import AuthMiddleware
 from app.utils.crawl_saramin import crawl_saramin
 from app.models.JobPostingRepository import get_job_posting_repository
+from app.api.routes import applications  # 추가된 라우터 임포트
 
 
 def custom_generate_unique_id(route: APIRoute) -> str:
@@ -38,3 +39,4 @@ def on_startup():
         crawl_saramin(keyword="python", pages=1, repository=repository)  # 레포지토리 전달
 
 app.include_router(api_router, prefix=settings.API_V1_STR)
+app.include_router(applications.router, prefix="/api/v1")

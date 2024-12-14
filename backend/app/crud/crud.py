@@ -1,5 +1,5 @@
 import uuid
-from typing import Any
+from typing import Any, Optional
 
 from sqlmodel import Session, select
 
@@ -7,6 +7,7 @@ from app.core.security import get_password_hash, verify_password
 from app.models.models import User, UserCreate, UserUpdate
 from app.models.JobPosting import JobPosting
 from app.models.JobPostingRepository import get_job_posting_repository, JobPostingRepository
+from app.models.Application import Application
 
 
 def create_user(*, session: Session, user_create: UserCreate) -> User:
@@ -59,5 +60,41 @@ def get_job_posting(repository: JobPostingRepository, posting_id: int) -> JobPos
 
 def create_job_posting(repository: JobPostingRepository, job_posting: JobPosting):
     return repository.create(job_posting)
+
+
+def create_application(session: Session, user_id: int, job_posting_id: int, resume: Optional[str] = None) -> Application:
+    # 중복 지원 체크
+    existing_application = session.exec(
+        select(Application).where(Application.user_id == user_id, Application.job_posting_id == job_posting_id)
+    ).first()
+    if existing_application:
+        raise ValueError("User has already applied for this job posting.")
+
+    application = Application(user_id=user_id, job_posting_id=job_posting_id, resume=resume)
+    session.add(application)
+    session.commit()
+    session.refresh(application)
+    return application
+
+
+def get_applications(session: Session, user_id: int, status: Optional[str] = None):
+    query = select(Application).where(Application.user_id == user_id)
+    if status:
+        query = query.where(Application.status == status)
+    return session.exec(query).all()
+
+
+def delete_application(session: Session, application_id: int) -> Application:
+    application = session.get(Application, application_id)
+    if not application:
+        raise ValueError("Application not found.")
+    
+    # 취소 가능 여부 확인 (예: 상태가 applied일 때만 취소 가능)
+    if application.status != "applied":
+        raise ValueError("Application cannot be withdrawn.")
+    
+    session.delete(application)
+    session.commit()
+    return application
 
 
