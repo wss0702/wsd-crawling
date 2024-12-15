@@ -3,7 +3,7 @@ services:
     image: postgres
     restart: always
     ports:
-      - 5432:5432
+      - 8080:5432
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: 123456
@@ -12,11 +12,9 @@ services:
       - postgres_data:/var/lib/postgresql/data
 
   fastapi-container:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: fastapi-image:latest
     ports:
-      - 8080:8080
+      - 443:443
     depends_on:
       - postgreSQL
     environment:

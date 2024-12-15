@@ -1,172 +1,118 @@
-# FastAPI Project - Backend
+# FastAPI 프로젝트 - 백엔드
 
-## Requirements
+## 요구 사항
 
-* [Docker](https://www.docker.com/).
-* [uv](https://docs.astral.sh/uv/) for Python package and environment management.
+- [Docker](https://www.docker.com/)
+- [Poetry](https://python-poetry.org/) (파이썬 패키지 및 환경 관리 도구)
+- [uv](https://docs.astral.sh/uv/) (파이썬 패키지 및 환경 관리 도구)
 
-## Docker Compose
+## 설치 및 설정
 
-Start the local development environment with Docker Compose following the guide in [../development.md](../development.md).
+1. **Poetry 설치**
 
-## General Workflow
+   Poetry가 설치되어 있지 않다면, 다음 명령어를 통해 설치할 수 있습니다:
 
-By default, the dependencies are managed with [uv](https://docs.astral.sh/uv/), go there and install it.
+   ```bash
+   curl -sSL https://install.python-poetry.org | python3 -
+   ```
 
-From `./backend/` you can install all the dependencies with:
+2. **의존성 설치**
 
-```console
-$ uv sync
-```
+   프로젝트의 `backend` 디렉토리로 이동한 후, 다음 명령어를 실행하여 의존성을 설치합니다:
 
-Then you can activate the virtual environment with:
+   ```bash
+   cd backend
+   poetry install
+   ```
 
-```console
-$ source .venv/bin/activate
-```
+3. **환경 변수 설정**
 
-Make sure your editor is using the correct Python virtual environment, with the interpreter at `backend/.venv/bin/python`.
+   `.env` 파일을 생성하고 필요한 환경 변수를 설정합니다. 예를 들어:
 
-Modify or add SQLModel models for data and SQL tables in `./backend/app/models.py`, API endpoints in `./backend/app/api/`, CRUD (Create, Read, Update, Delete) utils in `./backend/app/crud.py`.
+   ```env
+   DATABASE_URL=postgresql://user:password@localhost:5432/mydatabase
+   SECRET_KEY=your_secret_key
+   ```
 
-## VS Code
+## 빌드 및 실행
 
-There are already configurations in place to run the backend through the VS Code debugger, so that you can use breakpoints, pause and explore variables, etc.
+### Docker를 사용한 빌드 및 실행
 
-The setup is also already configured so you can run the tests through the VS Code Python tests tab.
+1. **Docker 이미지 빌드**
 
-## Docker Compose Override
+   `backend` 디렉토리에서 다음 명령어를 실행하여 Docker 이미지를 빌드합니다:
 
-During development, you can change Docker Compose settings that will only affect the local development environment in the file `docker-compose.override.yml`.
+   ```bash
+   docker build -t fastapi-backend .
+   ```
 
-The changes to that file only affect the local development environment, not the production environment. So, you can add "temporary" changes that help the development workflow.
+2. **Docker 컨테이너 실행**
 
-For example, the directory with the backend code is synchronized in the Docker container, copying the code you change live to the directory inside the container. That allows you to test your changes right away, without having to build the Docker image again. It should only be done during development, for production, you should build the Docker image with a recent version of the backend code. But during development, it allows you to iterate very fast.
+   빌드된 이미지를 기반으로 컨테이너를 실행합니다:
 
-There is also a command override that runs `fastapi run --reload` instead of the default `fastapi run`. It starts a single server process (instead of multiple, as would be for production) and reloads the process whenever the code changes. Have in mind that if you have a syntax error and save the Python file, it will break and exit, and the container will stop. After that, you can restart the container by fixing the error and running again:
+   ```bash
+   docker run -d -p 443:443 --name fastapi-backend-container fastapi-backend
+   ```
 
-```console
-$ docker compose watch
-```
+3. **Docker Compose를 사용한 개발 환경 실행**
 
-There is also a commented out `command` override, you can uncomment it and comment the default one. It makes the backend container run a process that does "nothing", but keeps the container alive. That allows you to get inside your running container and execute commands inside, for example a Python interpreter to test installed dependencies, or start the development server that reloads when it detects changes.
+   개발 환경에서는 `docker-compose`를 사용하는 것이 편리합니다. `docker-compose.yml` 파일을 생성하고 다음과 같이 설정합니다:
 
-To get inside the container with a `bash` session you can start the stack with:
+   ```yaml
+   version: '3.8'
 
-```console
-$ docker compose watch
-```
+   services:
+     backend:
+       build:
+         context: .
+         dockerfile: Dockerfile
+       ports:
+         - "443:443"
+       volumes:
+         - .:/app
+       environment:
+         - DATABASE_URL=${DATABASE_URL}
+         - SECRET_KEY=${SECRET_KEY}
+   ```
 
-and then in another terminal, `exec` inside the running container:
+   그런 다음, 다음 명령어로 개발 환경을 시작합니다:
 
-```console
-$ docker compose exec backend bash
-```
+   ```bash
+   docker-compose up --build
+   ```
 
-You should see an output like:
+## 마이그레이션
 
-```console
-root@7f2607af31c3:/app#
-```
+데이터베이스 스키마 변경을 관리하기 위해 Alembic을 사용합니다.
 
-that means that you are in a `bash` session inside your container, as a `root` user, under the `/app` directory, this directory has another directory called "app" inside, that's where your code lives inside the container: `/app/app`.
+1. **마이그레이션 적용**
 
-There you can use the `fastapi run --reload` command to run the debug live reloading server.
+   ```bash
+   alembic upgrade head
+   ```
 
-```console
-$ fastapi run --reload app/main.py
-```
+2. **새로운 마이그레이션 생성**
 
-...it will look like:
+   모델 변경 사항을 기반으로 새로운 마이그레이션 파일을 생성합니다:
 
-```console
-root@7f2607af31c3:/app# fastapi run --reload app/main.py
-```
+   ```bash
+   alembic revision --autogenerate -m "설명"
+   ```
 
-and then hit enter. That runs the live reloading server that auto reloads when it detects code changes.
+## 기타 명령어
 
-Nevertheless, if it doesn't detect a change but a syntax error, it will just stop with an error. But as the container is still alive and you are in a Bash session, you can quickly restart it after fixing the error, running the same command ("up arrow" and "Enter").
+- **컨테이너에 접속**
 
-...this previous detail is what makes it useful to have the container alive doing nothing and then, in a Bash session, make it run the live reload server.
+  ```bash
+  docker compose exec backend bash
+  ```
 
-## Backend tests
+- **라이브 리로드 서버 실행**
 
-To test the backend run:
+  ```bash
+  fastapi run --reload app/main.py
+  ```
+  
+## 라이선스
 
-```console
-$ bash ./scripts/test.sh
-```
-
-The tests run with Pytest, modify and add tests to `./backend/app/tests/`.
-
-If you use GitHub Actions the tests will run automatically.
-
-### Test running stack
-
-If your stack is already up and you just want to run the tests, you can use:
-
-```bash
-docker compose exec backend bash scripts/tests-start.sh
-```
-
-That `/app/scripts/tests-start.sh` script just calls `pytest` after making sure that the rest of the stack is running. If you need to pass extra arguments to `pytest`, you can pass them to that command and they will be forwarded.
-
-For example, to stop on first error:
-
-```bash
-docker compose exec backend bash scripts/tests-start.sh -x
-```
-
-### Test Coverage
-
-When the tests are run, a file `htmlcov/index.html` is generated, you can open it in your browser to see the coverage of the tests.
-
-## Migrations
-
-As during local development your app directory is mounted as a volume inside the container, you can also run the migrations with `alembic` commands inside the container and the migration code will be in your app directory (instead of being only inside the container). So you can add it to your git repository.
-
-Make sure you create a "revision" of your models and that you "upgrade" your database with that revision every time you change them. As this is what will update the tables in your database. Otherwise, your application will have errors.
-
-* Start an interactive session in the backend container:
-
-```console
-$ docker compose exec backend bash
-```
-
-* Alembic is already configured to import your SQLModel models from `./backend/app/models.py`.
-
-* After changing a model (for example, adding a column), inside the container, create a revision, e.g.:
-
-```console
-$ alembic revision --autogenerate -m "Add column last_name to User model"
-```
-
-* Commit to the git repository the files generated in the alembic directory.
-
-* After creating the revision, run the migration in the database (this is what will actually change the database):
-
-```console
-$ alembic upgrade head
-```
-
-If you don't want to use migrations at all, uncomment the lines in the file at `./backend/app/core/db.py` that end in:
-
-```python
-SQLModel.metadata.create_all(engine)
-```
-
-and comment the line in the file `scripts/prestart.sh` that contains:
-
-```console
-$ alembic upgrade head
-```
-
-If you don't want to start with the default models and want to remove them / modify them, from the beginning, without having any previous revision, you can remove the revision files (`.py` Python files) under `./backend/app/alembic/versions/`. And then create a first migration as described above.
-
-## Email Templates
-
-The email templates are in `./backend/app/email-templates/`. Here, there are two directories: `build` and `src`. The `src` directory contains the source files that are used to build the final email templates. The `build` directory contains the final email templates that are used by the application.
-
-Before continuing, ensure you have the [MJML extension](https://marketplace.visualstudio.com/items?itemName=attilabuti.vscode-mjml) installed in your VS Code.
-
-Once you have the MJML extension installed, you can create a new email template in the `src` directory. After creating the new email template and with the `.mjml` file open in your editor, open the command palette with `Ctrl+Shift+P` and search for `MJML: Export to HTML`. This will convert the `.mjml` file to a `.html` file and now you can save it in the build directory.
+이 프로젝트는 MIT 라이선스를 따릅니다. 자세한 내용은 [LICENSE](./LICENSE)를 참조하세요.
