@@ -38,4 +38,4 @@ def on_startup():
         repository = get_job_posting_repository(session)  # 레포지토리 인스턴스 생성
         crawl_saramin(keyword="개발자", pages=1, repository=repository)  # 레포지토리 전달
 
-app.include_router(api_router, prefix=settings.API_V1_STR)
+app.include_router(api_router)

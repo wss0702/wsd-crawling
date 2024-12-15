@@ -28,23 +28,6 @@ from app.utils.utils import generate_new_account_email, send_email
 router = APIRouter()
 
 
-@router.get(
-    "/",
-    dependencies=[Depends(get_current_active_superuser)],
-    response_model=UsersPublic,
-)
-def read_users(session: SessionDep, skip: int = 0, limit: int = 100) -> Any:
-    """
-    Retrieve users.
-    """
-
-    count_statement = select(func.count()).select_from(User)
-    count = session.exec(count_statement).one()
-
-    statement = select(User).offset(skip).limit(limit)
-    users = session.exec(statement).all()
-
-    return UsersPublic(data=users, count=count)
 
 
 @router.post(
@@ -117,12 +100,6 @@ def update_password_me(
     return Message(message="Password updated successfully")
 
 
-@router.get("/me", response_model=UserPublic)
-def read_user_me(current_user: CurrentUser) -> Any:
-    """
-    Get current user.
-    """
-    return current_user
 
 
 @router.delete("/me", response_model=Message)
@@ -157,22 +134,6 @@ def register_user(session: SessionDep, user_in: UserRegister) -> Any:
     return user
 
 
-@router.get("/{user_id}", response_model=UserPublic)
-def read_user_by_id(
-    user_id: uuid.UUID, session: SessionDep, current_user: CurrentUser
-) -> Any:
-    """
-    Get a specific user by id.
-    """
-    user = session.get(User, user_id)
-    if user == current_user:
-        return user
-    if not current_user.is_superuser:
-        raise HTTPException(
-            status_code=403,
-            detail="The user doesn't have enough privileges",
-        )
-    return user
 
 
 @router.put(

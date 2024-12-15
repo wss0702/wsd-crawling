@@ -19,12 +19,12 @@ class AuthMiddleware(BaseHTTPMiddleware):
         excluded_paths = [
             "/api/v1/openapi.json",
             "/docs",
-            "/api/v1/register",
-            "/api/v1/auth/login",
-            "/api/v1/auth/login/login/access-token",
-            "/api/v1/auth/login/login/test-token",
-            "/api/v1/users/signup",
-            "/api/v1/auth/users/signup"
+            "/register",
+            "/auth/login",
+            "/auth/login/login/access-token",
+            "/auth/login/login/test-token",
+            "/users/signup",
+            "/auth/users/signup"
         ]
         
         if request.url.path in excluded_paths:
@@ -34,7 +34,7 @@ class AuthMiddleware(BaseHTTPMiddleware):
         token = request.headers.get("Authorization")
         logger.info(f"Request token {token}")
         logger.info(f"Request headers: {request.headers}")
-        if token is None or not token.lower().startswith("Bearer "):
+        if token is None or not token.lower().startswith("bearer "):
             logger.warning("토큰이 없습니다.")  # 토큰 없음 로깅
             raise HTTPException(status_code=401, detail="Not authenticated")
 
