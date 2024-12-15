@@ -2,9 +2,9 @@ import uuid
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
-from sqlmodel import col, delete, func, select
+from sqlmodel import Session, select
 
-from app import crud
+from app.crud import crud  # crud 모듈 가져오기
 from app.api.deps import (
     CurrentUser,
     SessionDep,
