@@ -32,7 +32,7 @@ def toggle_bookmark(
         bookmark_repository.remove(bookmark)  # 북마크가 존재하면 삭제
         return bookmark  # 삭제된 북마크 반환
     else:
-        new_bookmark = Bookmark(user_id=user_id, job_posting_id=job_posting_id)  # 북마크 생성 시 user_id 사용
+        new_bookmark = Bookmark(user_id=user_id, item_id=job_posting_id)  # 북마크 생성 시 user_id 사용
         return bookmark_repository.add(new_bookmark)  # 북마크가 없으면 추가하고 반환
 
 @router.get("/bookmarks", response_model=List[Bookmark])
