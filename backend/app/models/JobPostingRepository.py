@@ -8,6 +8,13 @@ class JobPostingRepository:
         self.session = session
 
     def create(self, posting: JobPosting) -> JobPosting:
+        # 중복 확인
+        existing_posting = self.session.exec(
+            select(JobPosting).where(JobPosting.postingId == posting.postingId)
+        ).first()
+        if existing_posting:
+            return existing_posting  # 중복된 경우 기존 게시물 반환
+
         self.session.add(posting)
         self.session.commit()
         self.session.refresh(posting)

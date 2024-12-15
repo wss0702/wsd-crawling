@@ -36,6 +36,6 @@ def on_startup():
     with Session(engine) as session:
         init_db(session)
         repository = get_job_posting_repository(session)  # 레포지토리 인스턴스 생성
-        crawl_saramin(keyword="python", pages=1, repository=repository)  # 레포지토리 전달
+        crawl_saramin(keyword="개발자", pages=1, repository=repository)  # 레포지토리 전달
 
 app.include_router(api_router, prefix=settings.API_V1_STR)
