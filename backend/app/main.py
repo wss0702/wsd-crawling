@@ -29,7 +29,7 @@ app = FastAPI(
     generate_unique_id_function=custom_generate_unique_id,
 )
 
-app.add_middleware(AuthMiddleware)
+#app.add_middleware(AuthMiddleware)
 
 @app.on_event("startup")
 def on_startup():

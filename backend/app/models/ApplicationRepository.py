@@ -26,11 +26,14 @@ class ApplicationRepository:
             return application
         return None
 
-    def list(self, user_id: int, status: Optional[str] = None) -> list[Application]:
+    def list(self, user_id: int, status: Optional[str] = None, job_posting_id: Optional[int] = None) -> list[Application]:
         query = select(Application).where(Application.user_id == user_id)
 
         if status:
             query = query.where(Application.status == status)
+
+        if job_posting_id:
+            query = query.where(Application.job_posting_id == job_posting_id)
 
         return self.session.exec(query).all()
 
