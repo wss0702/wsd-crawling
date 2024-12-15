@@ -26,9 +26,6 @@ def read_jobs(
     }
     return list_job_postings(repository=repository, skip=skip, limit=limit, sort_by=sort_by, **filters)
 
-@router.post("/jobs", response_model=JobPosting)
-def create_job_posting(job_posting: JobPosting, repository: JobPostingRepository = Depends(get_job_posting_repository)):
-    return create_job_posting(repository=repository, job_posting=job_posting)
 
 @router.get("/jobs/{posting_id}", response_model=JobPosting)
 def read_job_posting(posting_id: int, repository: JobPostingRepository = Depends(get_job_posting_repository)):
@@ -37,13 +34,6 @@ def read_job_posting(posting_id: int, repository: JobPostingRepository = Depends
         raise HTTPException(status_code=404, detail="Job posting not found")
     return posting
 
-@router.put("/jobs/{posting_id}", response_model=JobPosting)
-def update_job_posting(posting_id: int, posting: JobPosting, repository: JobPostingRepository = Depends(get_job_posting_repository)):
-    existing_posting = get_job_posting(repository=repository, posting_id=posting_id)
-    if existing_posting is None:
-        raise HTTPException(status_code=404, detail="Job posting not found")
-    posting.postingId = posting_id  # ID를 업데이트
-    return create_job_posting(repository=repository, job_posting=posting)
 
 @router.delete("/jobs/{posting_id}", response_model=JobPosting)
 def delete_job_posting(posting_id: int, repository: JobPostingRepository = Depends(get_job_posting_repository)):
