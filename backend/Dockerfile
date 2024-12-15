@@ -30,9 +30,9 @@ RUN poetry config virtualenvs.create false && poetry install --no-root --no-dev
 COPY . /app
 
 # Expose the port FastAPI will run on
-EXPOSE 8000
+EXPOSE 8080
 
 # Run the FastAPI application
-CMD ["poetry", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["poetry", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080"]
 
 # poetry run uvicorn app.main:app --host 0.0.0.0 --port 8000
