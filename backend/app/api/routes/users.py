@@ -74,12 +74,13 @@ def create_user(*, session: SessionDep, user_in: UserCreate) -> Any:
     return user
 
 
-@router.patch("/me", response_model=UserPublic)
+@router.put("/profile", response_model=UserPublic)
 def update_user_me(
     *, session: SessionDep, user_in: UserUpdateMe, current_user: CurrentUser
 ) -> Any:
     """
     Update own user.
+    프로필 정보 수정정
     """
 
     if user_in.email:
@@ -96,7 +97,7 @@ def update_user_me(
     return current_user
 
 
-@router.patch("/me/password", response_model=Message)
+@router.put("/profile/password", response_model=Message)
 def update_password_me(
     *, session: SessionDep, body: UpdatePassword, current_user: CurrentUser
 ) -> Any:
@@ -174,7 +175,7 @@ def read_user_by_id(
     return user
 
 
-@router.patch(
+@router.put(
     "/{user_id}",
     dependencies=[Depends(get_current_active_superuser)],
     response_model=UserPublic,
